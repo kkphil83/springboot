@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.koscom.microservices.sample.dao.SampleUserDao">
+	<select id="selectUser" resultType="com.koscom.microservices.sample.model.SampleUser">
+	    select 
+	    	user_id,
+	    	user_nm,
+	    	addr
+	    from tb_user;
+	</select>
+	
+	
+	<select id="selectTest" resultType="int">
+	    select 
+	    	1
+	   ;
+	</select>
+</mapper>
+
+
+

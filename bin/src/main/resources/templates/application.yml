@@ -1,0 +1,44 @@
+server:  
+  port: ${PORT:10000}
+
+spring: 
+  profile:
+    value: dev 
+  application:
+    name: sample-service
+  #logging
+  logging:
+    pattern:
+      console: "%clr(%d{yyyy-MM-dd HH:mm:ss}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr([${springAppName:-},%X{X-B3-TraceId:-},%X{X-B3-SpanId:-},%X{X-Span-Export:-}]){yellow} %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"
+    level:
+      org.springframework: debug
+#      org.hibernate: debug
+      #jdbc.sqlonly: DEBUG 
+#      jdbc: DEBUG
+  # database
+  datasource:
+    driverClassName: com.mysql.jdbc.Driver
+    url: jdbc:mysql://173.193.107.21:3306/koscomdb
+#    driverClassName: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+#    url: jdbc:log4jdbc:mysql://173.193.107.21:3306/koscomdb?useUnicode=true&characterEncoding=utf-8
+    username: koscom
+    password: "!koscom00"
+    sql-script-encoding: utf-8
+    hikari:
+      connection-timeout: 5000
+      validation-timeout: 1000
+      maximum-pool-size: 30
+      minimum-idle: 2
+      connection-test-query: SELECT 1
+
+mybatis:
+    #type-handlers-package: com.koscom.microservices.sample
+    #config-location: classpath:mybatis/mapper/**/*.xml
+    mapper-locations: classpath:mybatis/mapper/**/*.xml
+    #check-config-location: true
+    configuration:
+        map-underscore-to-camel-case: true
+
+#log4jdbc: 
+#  spylogdelegator-name: net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator
+#  dump-sql-maxlinelength: 0

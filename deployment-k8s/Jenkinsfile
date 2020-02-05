@@ -12,8 +12,6 @@ def notifyMail(STATUS, RECIPIENTS) {
 	//from: "happycloudpak@gmail.com",
 	//to: RECIPIENTS
 }
-
-
 /* ------------------------------ */
 
 def emailRecipients="happycloudpak@gmail.com"
@@ -96,7 +94,7 @@ podTemplate(
 						sh "ls -al ${baseDir}/target"
 				}
 			}		
-/*
+
 			stageName = "Inspection Code"
 			stage(stageName) {
 				echo "**** START : " + stageName
@@ -114,7 +112,7 @@ podTemplate(
 						}
 					}				
 				}
-			} */
+			}
 			
 			stageName = "Build Microservice image"	
 			stage(stageName) {
@@ -128,7 +126,7 @@ podTemplate(
 					}
 				}
 			}
-/*
+
 			stageName = "Image Vulnerability Scanning"	
 			stage(stageName) {
 				echo "**** START : " + stageName
@@ -140,7 +138,7 @@ podTemplate(
 					}
 				}
 			}
-*/						
+					
 			stageName = "Deploy to Cluster"
 			stage( stageName ) {
 				container("kubectl") {

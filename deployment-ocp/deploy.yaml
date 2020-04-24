@@ -21,10 +21,10 @@ spec:
           imagePullPolicy: Always
           env:
             - name: PORT
-              value: "8081"
+              value: "8080"
           ports:
             - name: port1
-              containerPort: 8081
+              containerPort: 8080
           resources:
             requests:
               cpu: 200m
@@ -44,8 +44,8 @@ spec:
     appname: springboot-service
   ports:
     - name: port-springboot-service
-      port: 8090
-      targetPort: 8081
+      port: 80
+      targetPort: 8080
 
 ---
 apiVersion: extensions/v1beta1
@@ -62,4 +62,4 @@ spec:
           - path: /
             backend:
               serviceName: svc-springboot-service
-              servicePort: 8090
+              servicePort: 80

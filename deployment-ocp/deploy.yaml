@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: springboot-service-container
-          image: default-route-openshift-image-registry.apps.cloud-hr.kolon.com/default/springboot-service:latest
+          image: image-registry.openshift-image-registry.svc:5000/default/springboot-service
           imagePullPolicy: Always
           env:
             - name: PORT

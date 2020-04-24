@@ -64,6 +64,13 @@ node {
 		stage( stageName ) {
 			echo "**** START : " + stageName
 
+			def existed = sh(script: 'oc get deploy springboot-service -n default | wc -l', returnStdout: true)
+
+			if(existed = '2'){
+				echo "**** Delete Existed Deployment / Service / Ingress"
+				sh "oc delete -n ${namespace} -f ${baseDir}${baseDeployDir}/${deployment}"
+			}
+
 			sh "oc apply -n ${namespace} -f ${baseDir}${baseDeployDir}/${deployment}"
 			sh "oc get deployment -n ${namespace}"
 			sh "oc get svc -n ${namespace}"

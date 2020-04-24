@@ -72,9 +72,10 @@ node {
 			}
 */
 			sh "oc apply -n ${namespace} -f ${baseDir}${baseDeployDir}/${deployment}"
+			sh "oc expose deploy ${appname} --name svc-${appname}"
 			sh "oc get deployment -n ${namespace}"
 			sh "oc get svc -n ${namespace}"
-			sh "oc get ingress -n ${namespace}"
+			sh "oc get route -n ${namespace}"
 		}
 			
 			

@@ -46,20 +46,3 @@ spec:
     - name: port-springboot-service
       port: 80
       targetPort: 8080
-
----
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  annotations:
-    kubernetes.io/ingress.class: nginx
-  name: ing-springboot-service
-spec:
-  rules:
-    - host: springboot-service.apps.cloud-hr.kolon.com
-      http:
-        paths:
-          - path: /
-            backend:
-              serviceName: svc-springboot-service
-              servicePort: 80

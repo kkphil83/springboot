@@ -10,7 +10,6 @@ node {
 	
 	//-- 환경변수 파일 읽어서 변수값 셋팅
 	def props = readProperties  file:"./deployment-ocp/pipeline-ocp.properties"  // __custom__
-	def tag = props["version"]
 	def imageRegistry = props["imageRegistry"]
 	def image = props["image"]
 	def appname = props["appname"]
@@ -49,7 +48,7 @@ node {
 		stageName = "Build Container Image"	
 		stage(stageName) {
 			echo "**** START : " + stageName
-			
+
 	        sh "oc login -u kubeadmin -p eH8zi-Y6Ucf-7kfxa-bhv4V https://api-int.${ocpClusterDomain}:6443  --insecure-skip-tls-verify"
 
     	    def pw = sh(script: 'oc whoami -t', returnStdout: true)

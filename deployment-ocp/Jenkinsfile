@@ -67,8 +67,6 @@
 
 				container('podman') {
 					echo "*** podman Container ***"
-					sh "dnf install fuse-overlayfs -y"
-					sh "modprobe fuse"
 
 					withCredentials([usernamePassword(credentialsId: 'podman', usernameVariable: 'podman_user', passwordVariable: 'podman_pw')]) {
 						sh "podman login -u $podman_user ${imageRegistry} --tls-verify=false -p $podman_pw"

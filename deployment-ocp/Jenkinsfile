@@ -7,7 +7,7 @@ podTemplate(
 		containerTemplate(name: 'jnlp', image: 'image-registry.openshift-image-registry.svc:5000/openshift/jenkins-agent-maven:latest', args: 
 		'${computer.jnlpmac} ${computer.name}'),
 		containerTemplate(name: 'cli', image: 'image-registry.openshift-image-registry.svc:5000/openshift/cli:latest', privileged: true, ttyEnabled: true, command: 'cat'),
-		containerTemplate(name: 'podman', image: 'image-registry.openshift-image-registry.svc:5000/openshift/podman:latest', privileged: true, ttyEnabled: true, command: 'cat')
+		containerTemplate(name: 'podman', image: 'image-registry.openshift-image-registry.svc:5000/cicd/podman:latest', privileged: true, ttyEnabled: true, command: 'cat')
 	]
 ) 
 {
@@ -64,28 +64,19 @@ podTemplate(
 
 				//sh "oc login -u kubeadmin -p eH8zi-Y6Ucf-7kfxa-bhv4V https://api-int.${ocpClusterDomain}:6443  --insecure-skip-tls-verify"
 
-				container('cli') {
-					echo "*** CLI Container ***"
-					sh "yum install -y podman"
-					echo "0"
-					
-					def pw = ""
-					def id = ""
+				container('podman') {
+					echo "*** podman Container ***"
 
-					withCredentials([usernamePassword(credentialsId: 'ocp', usernameVariable: 'ocp_user', passwordVariable: 'ocp_pw')]) {
-						sh "oc login -u $ocp_user -p $ocp_pw https://api-int.${ocpClusterDomain}:6443  --insecure-skip-tls-verify"
-					}
-					echo "1"
 					withCredentials([usernamePassword(credentialsId: 'podman', usernameVariable: 'podman_user', passwordVariable: 'podman_pw')]) {
 						sh "podman login -u $podman_user ${imageRegistry} --tls-verify=false -p $podman_pw"
 					}
-					echo "2"
+					echo "1"
 					sh "podman build -f ${baseDir}${baseDeployDir}/Dockerfile -t ${imageRegistry}/${namespace}/${image}:${tag} ${WORKSPACE}"
-					echo "3"
+					echo "2"
 					sh "podman push ${imageRegistry}/${namespace}/${image}:${tag} --tls-verify=false "
-					echo "4"
+					echo "3"
 					sh "podman tag ${imageRegistry}/${namespace}/${image}:${tag} ${imageRegistry}/${namespace}/${image}:latest"
-					echo "5"
+					echo "4"
 					sh "podman push ${imageRegistry}/${namespace}/${image}:latest --tls-verify=false"
 				}
 			}

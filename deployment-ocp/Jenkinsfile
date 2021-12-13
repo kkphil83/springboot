@@ -70,11 +70,16 @@ podTemplate(
 				//sh "oc login -u kubeadmin -p eH8zi-Y6Ucf-7kfxa-bhv4V https://api-int.${ocpClusterDomain}:6443  --insecure-skip-tls-verify"
 
 				container('cli') {
+					echo "*** CLI Container ***"
+					id = sh(script: 'oc whoami', returnStdout: true)
+					echo "ID: ${id}"					
 					pw = sh(script: 'oc whoami -t', returnStdout: true)
+					echo "PW: ${pw}"
 				}
 
 				container('podman') {
-					sh "podman login -u jenkins-jenkins  ${imageRegistry} --tls-verify=false -p ${pw}"
+					echo "*** Podman Container ***"
+					sh "podman login -u ${id} ${imageRegistry} --tls-verify=false -p ${pw}"
 
 					sh "podman build -f ${baseDir}${baseDeployDir}/Dockerfile -t ${imageRegistry}/${namespace}/${image}:${tag} ${WORKSPACE}"
 					sh "podman push ${imageRegistry}/${namespace}/${image}:${tag} --tls-verify=false "

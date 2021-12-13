@@ -73,11 +73,11 @@ podTemplate(
 
 					withCredentials([usernamePassword(credentialsId: 'ocp', usernameVariable: 'ocp_user', passwordVariable: 'ocp_pw')]) {
 						sh "oc login -u $ocp_user -p $ocp_pw https://api-int.${ocpClusterDomain}:6443  --insecure-skip-tls-verify"
-						pw = sh(script: 'oc whoami -t', returnStdout: true)
-						id = sh(script: 'oc whoami', returnStdout: true)
 					}
 					echo "1"
-					sh "podman login -u ${id} ${imageRegistry} --tls-verify=false -p ${pw}"
+					withCredentials([usernamePassword(credentialsId: 'podman', usernameVariable: 'podman_user', passwordVariable: 'podman_pw')]) {
+						sh "podman login -u $podman_user ${imageRegistry} --tls-verify=false -p $podman_pw"
+					}
 					echo "2"
 					sh "podman build -f ${baseDir}${baseDeployDir}/Dockerfile -t ${imageRegistry}/${namespace}/${image}:${tag} ${WORKSPACE}"
 					echo "3"

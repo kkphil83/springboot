@@ -1,4 +1,4 @@
-FROM image-registry.openshift-image-registry.svc:5000/openshift/openjdk-11-rhel8:1.0
+FROM openjdk:8-jdk-alpine
 
 ADD target/*.jar app.jar
 

@@ -1,11 +1,11 @@
-podTemplate(
+/*podTemplate(
 	containers: [
 		//container image는 docker search 명령 이용
 		containerTemplate(name: 'jnlp', image: 'image-registry.openshift-image-registry.svc:5000/openshift/jenkins-agent-maven:latest', ttyEnabled: true, command: 'cat'),
 		containerTemplate(name: 'maven', image: 'maven:3.3.9-jdk-8-alpine', ttyEnabled: true, command: 'cat'),
-		containerTemplate(name: 'podman', image: 'image-registry.openshift-image-registry.svc:5000/cicd/podman:latest', ttyEnabled: true, command: "cat")
+		containerTemplate(name: 'podman', image: 'image-registry.openshift-image-registry.svc:5000/cicd/podman:latest', ttyEnabled: true, command: 'cat')
 	]
-) 
+) */ 
 {
 	node {
 		String stageName = ""
@@ -46,7 +46,7 @@ podTemplate(
 				echo "baseDir : ${baseDir}"
 				echo "baseDeployDir : ${baseDeployDir}"
 				sh "ls -al"
-				container('podman') {
+				container('maven') {
 					echo "*** Start Maven Container Template ***"
 					sh "mvn -B -f ${baseDir} clean package"
 					echo "*** RESULT ***"

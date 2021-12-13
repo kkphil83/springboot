@@ -41,10 +41,10 @@ podTemplate(
 				echo "**** START : " + stageName + "\n"
 
 				container('maven') {
-					def _dir = pwd();
-					echo "path : ${_dir}"
-					echo "baseDir : ${baseDir}"
-					echo "baseDeployDir : ${baseDeployDir}"
+					//def _dir = pwd();
+					//echo "path : ${_dir}"
+					//echo "baseDir : ${baseDir}"
+					//echo "baseDeployDir : ${baseDeployDir}"
 					sh "ls -al"
 
 					sh "mvn -B -f ${baseDir} clean package"

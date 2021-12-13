@@ -44,9 +44,6 @@ podTemplate(
 		def now = new Date()
 		def tag = now.format("yyMMdd-HHmmss", TimeZone.getTimeZone('Asia/Seoul'))
 
-		// ocp 계정 패스워드 변수
-		def pw = ""
-
 		try {
 			stageName = "Build maven project"
 			stage(stageName) {
@@ -74,7 +71,12 @@ podTemplate(
 					echo "*** CLI Container ***"
 					sh "yum install -y podman"
 					echo "0"
-					sh "podman login -u ${id} ${imageRegistry} --tls-verify=false -p ${pw}"
+					
+					withCredentials([usernamePassword(credentialsId: 'ocp', usernameVariable: 'ocp_user', passwordVariable: 'ocp_pw')]) {
+						sh "oc login -u $podman_user -p $podman_pw https://api-int.${ocpClusterDomain}:6443  --insecure-skip-tls-verify"
+						def pw = sh(script: 'oc whoami -t', returnStdout: true)
+						sh "podman login -u $podman_user ${imageRegistry} --tls-verify=false -p ${pw}"
+					}
 					echo "1"
 
 					sh "podman build -f ${baseDir}${baseDeployDir}/Dockerfile -t ${imageRegistry}/${namespace}/${image}:${tag} ${WORKSPACE}"

@@ -5,7 +5,7 @@ podTemplate(
 	containers: [
 		//container image는 docker search 명령 이용
 		containerTemplate(name: 'jnlp', image: 'image-registry.openshift-image-registry.svc:5000/openshift/jenkins-agent-maven:latest', ttyEnabled: true, command: 'cat'),
-		containerTemplate(name: 'podman', image: 'image-registry.openshift-image-registry.svc:5000/cicd/podman:latest', ttyEnabled: true, command: 'cat')
+		containerTemplate(name: 'podman', image: 'image-registry.openshift-image-registry.svc:5000/openshift/cli:latest', ttyEnabled: true, command: 'cat')
 	]
 ) 
 {

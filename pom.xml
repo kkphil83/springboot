@@ -49,18 +49,6 @@
 			<scope>test</scope>
 		</dependency>
 		
-		<!-- tomcat -->
-<!-- 		<dependency>
-		        <groupId>org.springframework.boot</groupId>
-		        <artifactId>spring-boot-starter-tomcat</artifactId>
-		</dependency>	 -->
-<!-- 		<dependency>
-		    <groupId>javax.servlet</groupId>
-		    <artifactId>javax.servlet-api</artifactId>
-		    <version>4.0.1</version>
-		    <scope>provided</scope>
-		</dependency>	 -->	
-		
 		<!-- db -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -126,5 +114,12 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<repositories>
+		<repository>
+			<id>central</id>
+			<url>http://nexusrepo-sonatype-nexus-service:8081/repository/maven-public/</url>
+		</repository>
+	</repositories>
 
 </project>

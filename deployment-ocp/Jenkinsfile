@@ -6,12 +6,8 @@ podTemplate(
 		//container image는 docker search 명령 이용
 		containerTemplate(name: 'jnlp', image: 'image-registry.openshift-image-registry.svc:5000/openshift/jenkins-agent-maven:latest', args: 
 		'${computer.jnlpmac} ${computer.name}'),
-		containerTemplate(name: 'cli', image: 'image-registry.openshift-image-registry.svc:5000/openshift/cli:latest', privileged: true, ttyEnabled: true, command: 'cat')
-		//containerTemplate(name: 'podman', image: 'image-registry.openshift-image-registry.svc:5000/openshift/podman:latest', privileged: true, ttyEnabled: true, command: 'cat')
-	],
-	//volume mount
-	volumes: [
-		hostPathVolume(hostPath: '/tmp/.m2', mountPath: '/tmp/.m2') 
+		containerTemplate(name: 'cli', image: 'image-registry.openshift-image-registry.svc:5000/openshift/cli:latest', privileged: true, ttyEnabled: true, command: 'cat'),
+		containerTemplate(name: 'podman', image: 'image-registry.openshift-image-registry.svc:5000/openshift/podman:latest', privileged: true, ttyEnabled: true, command: 'cat')
 	]
 ) 
 {
@@ -73,9 +69,9 @@ podTemplate(
 					echo "0"
 					
 					withCredentials([usernamePassword(credentialsId: 'ocp', usernameVariable: 'ocp_user', passwordVariable: 'ocp_pw')]) {
-						sh "oc login -u $podman_user -p $podman_pw https://api-int.${ocpClusterDomain}:6443  --insecure-skip-tls-verify"
+						sh "oc login -u $ocp_user -p $ocp_pw https://api-int.${ocpClusterDomain}:6443  --insecure-skip-tls-verify"
 						def pw = sh(script: 'oc whoami -t', returnStdout: true)
-						sh "podman login -u $podman_user ${imageRegistry} --tls-verify=false -p ${pw}"
+						sh "podman login -u $ocp_user ${imageRegistry} --tls-verify=false -p ${pw}"
 					}
 					echo "1"
 

@@ -6,7 +6,7 @@
 		containerTemplate(name: 'podman', image: 'image-registry.openshift-image-registry.svc:5000/cicd/podman:latest', ttyEnabled: true, command: 'cat')
 	]
 ) */ 
-{
+
 	node {
 		String stageName = ""
 		stageName = "Get Source"	
@@ -104,4 +104,3 @@
 			currentBuild.result = "FAILED"			
 		}
 	}
-}

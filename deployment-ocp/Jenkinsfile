@@ -51,6 +51,7 @@
 				echo "baseDir : ${baseDir}"
 				echo "baseDeployDir : ${baseDeployDir}"
 				sh "ls -al"
+				sh "sleep 30000"
 				container('jnlp') {
 					sh "mvn -B -f ${baseDir} -s ./settings.xml clean package"
 					echo "*** RESULT ***"

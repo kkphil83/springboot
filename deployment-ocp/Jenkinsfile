@@ -4,8 +4,8 @@ podTemplate(
 	inheritFrom: "maven",
 	containers: [
 		//container image는 docker search 명령 이용
-		containerTemplate(name: 'jnlp', image: 'image-registry.openshift-image-registry.svc:5000/openshift/jenkins-agent-maven:latest', ttyEnabled: true, command: 'cat'),
-		containerTemplate(name: 'podman', image: 'image-registry.openshift-image-registry.svc:5000/cicd/podman:latest', ttyEnabled: true, command: 'cat')
+		containerTemplate(name: 'jnlp', image: 'image-registry.openshift-image-registry.svc:5000/openshift/jenkins-agent-maven:latest', ttyEnabled: true, command: 'cat')
+		//containerTemplate(name: 'podman', image: 'image-registry.openshift-image-registry.svc:5000/cicd/podman:latest', ttyEnabled: true, command: 'cat')
 	]
 ) 
 {
@@ -48,12 +48,12 @@ podTemplate(
 				echo "baseDir : ${baseDir}"
 				echo "baseDeployDir : ${baseDeployDir}"
 				sh "ls -al"
-				container('maven') {
+				//container('maven') {
 					sh "mvn -B -f ${baseDir} clean package"
 					echo "*** RESULT ***"
 					sh "pwd"
 					sh "ls -al ${baseDir}/target"
-				}
+				//}
 			}		
 
 			stageName = "Build Container Image"	
@@ -62,7 +62,7 @@ podTemplate(
 
 				//sh "oc login -u kubeadmin -p eH8zi-Y6Ucf-7kfxa-bhv4V https://api-int.${ocpClusterDomain}:6443  --insecure-skip-tls-verify"
 
-				container('podman') {
+				//container('podman') {
 					def pw = sh(script: 'oc whoami -t', returnStdout: true)
 					sh "podman login -u jenkins-jenkins  ${imageRegistry} --tls-verify=false -p ${pw}"
 
@@ -70,7 +70,7 @@ podTemplate(
 					sh "podman push ${imageRegistry}/${namespace}/${image}:${tag} --tls-verify=false "
 					sh "podman tag ${imageRegistry}/${namespace}/${image}:${tag} ${imageRegistry}/${namespace}/${image}:latest"
 					sh "podman push ${imageRegistry}/${namespace}/${image}:latest --tls-verify=false"
-				}
+				//}
 			}
 							
 			stageName = "Deploy to Cluster"

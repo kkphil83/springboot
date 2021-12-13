@@ -32,18 +32,16 @@ node {
 		stageName = "Build maven project"
 		stage(stageName) {
 			echo "**** START : " + stageName + "\n"
-
+			def _dir = pwd();
+			echo "path : ${_dir}"
+			echo "baseDir : ${baseDir}"
+			echo "baseDeployDir : ${baseDeployDir}"
+			sh "ls -al"
 			container('maven') {
-				//def _dir = pwd();
-				//echo "path : ${_dir}"
-				//echo "baseDir : ${baseDir}"
-				//echo "baseDeployDir : ${baseDeployDir}"
-				sh "ls -al"
-
-				sh "mvn -B -f ${baseDir} clean package"
-				echo "*** RESULT ***"
-				sh "pwd"
-				sh "ls -al ${baseDir}/target"
+					sh "mvn -B -f ${baseDir} clean package"
+					echo "*** RESULT ***"
+					sh "pwd"
+					sh "ls -al ${baseDir}/target"
 			}
 		}		
 

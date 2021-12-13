@@ -69,7 +69,7 @@
 					echo "*** podman Container ***"
 
 					withCredentials([usernamePassword(credentialsId: 'podman', usernameVariable: 'podman_user', passwordVariable: 'podman_pw')]) {
-						sh "sudo podman login -u $podman_user ${imageRegistry} --tls-verify=false -p $podman_pw"
+						sh "podman login -u $podman_user ${imageRegistry} --tls-verify=false -p $podman_pw"
 					}
 					echo "1"
 					sh "podman build -f ${baseDir}${baseDeployDir}/Dockerfile -t ${imageRegistry}/${namespace}/${image}:${tag} ${WORKSPACE}"

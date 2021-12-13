@@ -74,7 +74,6 @@
 						echo "1"
 						sh "podman build -f ${baseDir}${baseDeployDir}/Dockerfile -t ${imageRegistry}/${namespace}/${image}:${tag} ${WORKSPACE}  --tls-verify=false"
 						echo "2"
-						sh "podman login -u $podman_user ${imageRegistry} --tls-verify=false -p $podman_pw"
 						sh "podman push ${imageRegistry}/${namespace}/${image}:${tag} --tls-verify=false"
 						echo "3"
 						sh "podman tag ${imageRegistry}/${namespace}/${image}:${tag} ${imageRegistry}/${namespace}/${image}:latest"

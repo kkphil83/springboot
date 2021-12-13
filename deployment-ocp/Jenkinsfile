@@ -1,5 +1,4 @@
 podTemplate(
-	label: label, 
 	containers: [
 		//container image는 docker search 명령 이용
 		containerTemplate(name: 'maven', image: 'maven:3.3.9-jdk-8-alpine', ttyEnabled: true, command: 'cat'),

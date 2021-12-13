@@ -3,16 +3,7 @@ podTemplate(
 	containers: [
 		//container image는 docker search 명령 이용
 		containerTemplate(name: 'maven', image: 'maven:3.3.9-jdk-8-alpine', ttyEnabled: true, command: 'cat'),
-		containerTemplate(name: "podman", image: "image-registry.openshift-image-registry.svc:5000/cicd/podman:latest", ttyEnabled: true, command: "cat"),
-		//containerTemplate(name: "scanner", image: "newtmitch/sonar-scanner", ttyEnabled: true, command: "cat"),
-		//containerTemplate(name: "kubectl", image: "roffe/kubectl", ttyEnabled: true, command: "cat")
-	],
-	//volume mount
-	volumes: [
-		//hostPathVolume(hostPath: "/var/run/docker.sock", mountPath: "/var/run/docker.sock"),
-		hostPathVolume(hostPath: '/maven/.m2', mountPath: '/root/.m2') 
-		//you can NFS SERVER as followed
-		//nfsVolume(mountPath: '/root/.m2', serverAddress: '169.56.170.173', serverPath: '/srv/nfs/.m2', readOnly: false)
+		containerTemplate(name: "podman", image: "image-registry.openshift-image-registry.svc:5000/cicd/podman:latest", ttyEnabled: true, command: "cat")
 	]
 ) 
 {

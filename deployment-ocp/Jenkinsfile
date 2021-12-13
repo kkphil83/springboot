@@ -15,7 +15,7 @@ podTemplate(
 		//nfsVolume(mountPath: '/root/.m2', serverAddress: '169.56.170.173', serverPath: '/srv/nfs/.m2', readOnly: false)
 	]
 ) 
-}
+{
 	node {
 		String stageName = ""
 		stageName = "Get Source"	

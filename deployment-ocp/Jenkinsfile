@@ -7,11 +7,11 @@ podTemplate(
 		containerTemplate(name: 'jnlp', image: 'image-registry.openshift-image-registry.svc:5000/openshift/jenkins-agent-maven:latest', args: 
 		'${computer.jnlpmac} ${computer.name}'),
 		containerTemplate(name: 'cli', image: 'image-registry.openshift-image-registry.svc:5000/openshift/cli:latest', privileged: true, ttyEnabled: true, command: 'cat'),
-		containerTemplate(name: 'podman', image: 'image-registry.openshift-image-registry.svc:5000/cicd/podman:latest', privileged: true, ttyEnabled: true, command: 'cat')
+		containerTemplate(name: 'podman', image: 'image-registry.openshift-image-registry.svc:5000/openshift/podman:latest', privileged: true, ttyEnabled: true, command: 'cat')
 	],
 	//volume mount
 	volumes: [
-		hostPathVolume(hostPath: '/tmp/.m2', mountPath: '/root/.m2') 
+		hostPathVolume(hostPath: '/var/lib/jenkins/.m2', mountPath: '/home/jenkins/.m2') 
 	]
 ) 
 {

@@ -1,4 +1,4 @@
-FROM image-registry.openshift-image-registry.svc:5000/openshift/openjdk-11-rhel7:1.1
+FROM docker.io/azul/zulu-openjdk-alpine:15.0.3
 
 ADD target/*.jar app.jar
 

@@ -1,106 +1,95 @@
-/*podTemplate(
-	containers: [
-		//container image는 docker search 명령 이용
-		containerTemplate(name: 'jnlp', image: 'image-registry.openshift-image-registry.svc:5000/openshift/jenkins-agent-maven:latest', ttyEnabled: true, command: 'cat'),
-		containerTemplate(name: 'maven', image: 'maven:3.3.9-jdk-8-alpine', ttyEnabled: true, command: 'cat'),
-		containerTemplate(name: 'podman', image: 'image-registry.openshift-image-registry.svc:5000/cicd/podman:latest', ttyEnabled: true, command: 'cat')
-	]
-) */ 
 
-	node {
-		String stageName = ""
-		stageName = "Get Source"	
-		stage(stageName) {
-			echo "**** START : " + stageName
-			
-			git "https://github.com/kkphil83/springboot.git"
-			
-		}
+node {
+	String stageName = ""
+	stageName = "Get Source"	
+	stage(stageName) {
+		echo "**** START : " + stageName
 		
-		//-- 환경변수 파일 읽어서 변수값 셋팅
-		def props = readProperties  file:"./deployment-ocp/pipeline-ocp.properties"  // __custom__
-		def image = props["image"]
-		def appname = props["appname"]
-		def containername = props["containername"]
-		def deployment = props["deployment"]
-		def baseDir = props["baseDir"]
-		def baseDeployDir = props["baseDeployDir"]
-		def namespace = props["namespace"]
-		def skipStages = props["skipStages"]
+		git "https://github.com/kkphil83/springboot.git"
 		
-		def ocpClusterDomain = props["ocpClusterDomain"]
-
-		// ocp 내부에서 접속가능한 이미지 레지스트리 주소
-		def internalRegistry = "image-registry.openshift-image-registry.svc:5000"
-				
-		// tag를 재정의 함. 이미지 버전이 달라야 배포시 컨테이너에서 인식
-		def now = new Date()
-		def tag = now.format("yyMMdd-HHmmss", TimeZone.getTimeZone('Asia/Seoul'))
-
-		try {
-			stageName = "Build maven project"
-			stage(stageName) {
-				echo "**** START : " + stageName + "\n"
-				def _dir = pwd();
-				echo "path : ${_dir}"
-				echo "baseDir : ${baseDir}"
-				echo "baseDeployDir : ${baseDeployDir}"
-				sh "ls -al"
-				container('maven') {
-					echo "*** Start Maven Container Template ***"
-					sh "mvn -B -f ${baseDir} clean package"
-					echo "*** RESULT ***"
-					sh "pwd"
-					sh "ls -al ${baseDir}/target"
-				}
-			}		
-
-			stageName = "Build Container Image"	
-			stage(stageName) {
-				echo "**** START : " + stageName + "\n"
-
-				//sh "oc login -u kubeadmin -p eH8zi-Y6Ucf-7kfxa-bhv4V https://api-int.${ocpClusterDomain}:6443  --insecure-skip-tls-verify"
-
-				container('podman') {
-					def pw = sh(script: 'oc whoami -t', returnStdout: true)
-					sh "podman login -u jenkins-jenkins  ${imageRegistry} --tls-verify=false -p ${pw}"
-
-					sh "podman build -f ${baseDir}${baseDeployDir}/Dockerfile -t ${imageRegistry}/${namespace}/${image}:${tag} ${WORKSPACE}"
-					sh "podman push ${imageRegistry}/${namespace}/${image}:${tag} --tls-verify=false "
-					sh "podman tag ${imageRegistry}/${namespace}/${image}:${tag} ${imageRegistry}/${namespace}/${image}:latest"
-					sh "podman push ${imageRegistry}/${namespace}/${image}:latest --tls-verify=false"
-				}
-			}
-							
-			stageName = "Deploy to Cluster"
-			stage( stageName ) {
-				echo "\n******* START : " + stageName + "\n"
-
-				sh "oc get deploy ${appname} -n ${namespace} | grep ${appname} | wc -l > existed.txt"
-
-				def existed = sh(script: 'cat existed.txt', returnStdout: true)
-				def toIntOrNull = { it?.isInteger() ? it.toInteger() : null }
-
-				if(toIntOrNull(existed) > 0){
-					echo "\n******* Rolling Update ***********************\n"
-					sh "oc set image deployment/${appname} springboot-service-container=${internalRegistry}/${namespace}/${image}:${tag} --record -n ${namespace}"
-					sh "oc rollout status deployment.v1.apps/${appname} -n ${namespace}"
-				}else{
-					sh "oc apply -n ${namespace} -f ${baseDir}${baseDeployDir}/${deployment}"
-					sh "oc expose service svc-${appname} --hostname ${appname}.app.${ocpClusterDomain}"
-				}
-
-				echo "\n****** RESULT ******\n"
-				sh "oc get deployment -n ${namespace}"
-				sh "oc get svc -n ${namespace}"
-				sh "oc get route -n ${namespace}"
-			}
-				
-				
-			echo "**** FINISH ALL STAGES : SUCESS"
-			echo " swagger URL : ${appname}.app.${ocpClusterDomain}/swagger-ui.html"
-			
-		} catch(e) {
-			currentBuild.result = "FAILED"			
-		}
 	}
+	
+	//-- 환경변수 파일 읽어서 변수값 셋팅
+	def props = readProperties  file:"./deployment-ocp/pipeline-ocp.properties"  // __custom__
+	def image = props["image"]
+	def appname = props["appname"]
+	def containername = props["containername"]
+	def deployment = props["deployment"]
+	def baseDir = props["baseDir"]
+	def baseDeployDir = props["baseDeployDir"]
+	def namespace = props["namespace"]
+	def skipStages = props["skipStages"]
+	
+	def ocpClusterDomain = props["ocpClusterDomain"]
+
+	// ocp 내부에서 접속가능한 이미지 레지스트리 주소
+	def internalRegistry = "image-registry.openshift-image-registry.svc:5000"
+			
+	// tag를 재정의 함. 이미지 버전이 달라야 배포시 컨테이너에서 인식
+	def now = new Date()
+	def tag = now.format("yyMMdd-HHmmss", TimeZone.getTimeZone('Asia/Seoul'))
+
+	try {
+		stageName = "Build maven project"
+		stage(stageName) {
+			echo "**** START : " + stageName + "\n"
+			def _dir = pwd();
+			echo "path : ${_dir}"
+			echo "baseDir : ${baseDir}"
+			echo "baseDeployDir : ${baseDeployDir}"
+			sh "ls -al"
+			sh "mvn -B -f ${baseDir} clean package"
+			echo "*** RESULT ***"
+			sh "pwd"
+			sh "ls -al ${baseDir}/target"
+		}		
+
+		stageName = "Build Container Image"	
+		stage(stageName) {
+			echo "**** START : " + stageName + "\n"
+
+			//sh "oc login -u kubeadmin -p eH8zi-Y6Ucf-7kfxa-bhv4V https://api-int.${ocpClusterDomain}:6443  --insecure-skip-tls-verify"
+
+			//container('podman') {
+				def pw = sh(script: 'oc whoami -t', returnStdout: true)
+				sh "podman login -u jenkins-jenkins  ${imageRegistry} --tls-verify=false -p ${pw}"
+
+				sh "podman build -f ${baseDir}${baseDeployDir}/Dockerfile -t ${imageRegistry}/${namespace}/${image}:${tag} ${WORKSPACE}"
+				sh "podman push ${imageRegistry}/${namespace}/${image}:${tag} --tls-verify=false "
+				sh "podman tag ${imageRegistry}/${namespace}/${image}:${tag} ${imageRegistry}/${namespace}/${image}:latest"
+				sh "podman push ${imageRegistry}/${namespace}/${image}:latest --tls-verify=false"
+			//}
+		}
+						
+		stageName = "Deploy to Cluster"
+		stage( stageName ) {
+			echo "\n******* START : " + stageName + "\n"
+
+			sh "oc get deploy ${appname} -n ${namespace} | grep ${appname} | wc -l > existed.txt"
+
+			def existed = sh(script: 'cat existed.txt', returnStdout: true)
+			def toIntOrNull = { it?.isInteger() ? it.toInteger() : null }
+
+			if(toIntOrNull(existed) > 0){
+				echo "\n******* Rolling Update ***********************\n"
+				sh "oc set image deployment/${appname} springboot-service-container=${internalRegistry}/${namespace}/${image}:${tag} --record -n ${namespace}"
+				sh "oc rollout status deployment.v1.apps/${appname} -n ${namespace}"
+			}else{
+				sh "oc apply -n ${namespace} -f ${baseDir}${baseDeployDir}/${deployment}"
+				sh "oc expose service svc-${appname} --hostname ${appname}.app.${ocpClusterDomain}"
+			}
+
+			echo "\n****** RESULT ******\n"
+			sh "oc get deployment -n ${namespace}"
+			sh "oc get svc -n ${namespace}"
+			sh "oc get route -n ${namespace}"
+		}
+			
+			
+		echo "**** FINISH ALL STAGES : SUCESS"
+		echo " swagger URL : ${appname}.app.${ocpClusterDomain}/swagger-ui.html"
+		
+	} catch(e) {
+		currentBuild.result = "FAILED"			
+	}
+}

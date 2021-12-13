@@ -68,19 +68,23 @@ podTemplate(
 					sh "yum install -y podman"
 					echo "0"
 					
+					def pw = ""
+					def id = ""
+
 					withCredentials([usernamePassword(credentialsId: 'ocp', usernameVariable: 'ocp_user', passwordVariable: 'ocp_pw')]) {
 						sh "oc login -u $ocp_user -p $ocp_pw https://api-int.${ocpClusterDomain}:6443  --insecure-skip-tls-verify"
-						def pw = sh(script: 'oc whoami -t', returnStdout: true)
-						sh "podman login -u $ocp_user ${imageRegistry} --tls-verify=false -p ${pw}"
+						pw = sh(script: 'oc whoami -t', returnStdout: true)
+						id = sh(script: 'oc whoami', returnStdout: true)
 					}
 					echo "1"
-
-					sh "podman build -f ${baseDir}${baseDeployDir}/Dockerfile -t ${imageRegistry}/${namespace}/${image}:${tag} ${WORKSPACE}"
+					sh "podman login -u ${id} ${imageRegistry} --tls-verify=false -p ${pw}"
 					echo "2"
-					sh "podman push ${imageRegistry}/${namespace}/${image}:${tag} --tls-verify=false "
+					sh "podman build -f ${baseDir}${baseDeployDir}/Dockerfile -t ${imageRegistry}/${namespace}/${image}:${tag} ${WORKSPACE}"
 					echo "3"
-					sh "podman tag ${imageRegistry}/${namespace}/${image}:${tag} ${imageRegistry}/${namespace}/${image}:latest"
+					sh "podman push ${imageRegistry}/${namespace}/${image}:${tag} --tls-verify=false "
 					echo "4"
+					sh "podman tag ${imageRegistry}/${namespace}/${image}:${tag} ${imageRegistry}/${namespace}/${image}:latest"
+					echo "5"
 					sh "podman push ${imageRegistry}/${namespace}/${image}:latest --tls-verify=false"
 				}
 			}

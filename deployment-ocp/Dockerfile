@@ -1,4 +1,4 @@
-FROM image-registry.openshift-image-registry.svc:5000/openshift/ubi8-openjdk-8:1.3
+FROM image-registry.openshift-image-registry.svc:5000/openshift/openjdk-11-rhel8:1.0
 
 ADD target/*.jar app.jar
 

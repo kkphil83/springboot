@@ -46,7 +46,7 @@ podTemplate(
 				echo "baseDir : ${baseDir}"
 				echo "baseDeployDir : ${baseDeployDir}"
 				sh "ls -al"
-				container('maven') {
+				container('jnlp') {
 					echo "*** Start Maven Container Template ***"
 					sh "mvn -B -f ${baseDir} clean package"
 					echo "*** RESULT ***"

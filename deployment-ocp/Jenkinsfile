@@ -11,7 +11,7 @@ podTemplate(
 	],
 	//volume mount
 	volumes: [
-		hostPathVolume(hostPath: '/tmp/.m2', mountPath: '/home/jenkins/.m2') 
+		hostPathVolume(hostPath: '/tmp/.m2', mountPath: '/tmp/.m2') 
 	]
 ) 
 {

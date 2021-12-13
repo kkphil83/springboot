@@ -35,8 +35,8 @@
 
 		// ocp 내부에서 접속가능한 이미지 레지스트리 주소
 		def internalRegistry = "image-registry.openshift-image-registry.svc:5000"
-		//def imageRegistry = "image-registry.openshift-image-registry.svc:5000"
-		def imageRegistry = "default-route-openshift-image-registry.apps.ocp-poc.openshift.com"
+		def imageRegistry = "image-registry.openshift-image-registry.svc:5000"
+		//def imageRegistry = "default-route-openshift-image-registry.apps.ocp-poc.openshift.com"
 		
 		// tag를 재정의 함. 이미지 버전이 달라야 배포시 컨테이너에서 인식
 		def now = new Date()

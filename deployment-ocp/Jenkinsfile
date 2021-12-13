@@ -4,13 +4,14 @@ podTemplate(
 	inheritFrom: "maven",
 	containers: [
 		//container image는 docker search 명령 이용
-		containerTemplate(name: 'jnlp', image: 'image-registry.openshift-image-registry.svc:5000/openshift/jenkins-agent-maven:latest', ttyEnabled: true, command: 'cat'),
-		containerTemplate(name: 'cli', image: 'image-registry.openshift-image-registry.svc:5000/openshift/cli:latest', ttyEnabled: true, command: 'cat'),
-		containerTemplate(name: 'podman', image: 'image-registry.openshift-image-registry.svc:5000/cicd/podman:latest', ttyEnabled: true, command: 'cat')
+		containerTemplate(name: 'jnlp', image: 'image-registry.openshift-image-registry.svc:5000/openshift/jenkins-agent-maven:latest', args: 
+		'${computer.jnlpmac} ${computer.name}'),
+		containerTemplate(name: 'cli', image: 'image-registry.openshift-image-registry.svc:5000/openshift/cli:latest', privileged: true, ttyEnabled: true, command: 'cat'),
+		containerTemplate(name: 'podman', image: 'image-registry.openshift-image-registry.svc:5000/cicd/podman:latest', privileged: true, ttyEnabled: true, command: 'cat')
 	],
 	//volume mount
 	volumes: [
-		hostPathVolume(hostPath: '/var/lib/jenkins/.m2', mountPath: '/root/.m2') 
+		hostPathVolume(hostPath: '/tmp/.m2', mountPath: '/root/.m2') 
 	]
 ) 
 {
@@ -80,10 +81,14 @@ podTemplate(
 				container('podman') {
 					echo "*** Podman Container ***"
 					sh "podman login -u ${id} ${imageRegistry} --tls-verify=false -p ${pw}"
+					echo "1"
 
 					sh "podman build -f ${baseDir}${baseDeployDir}/Dockerfile -t ${imageRegistry}/${namespace}/${image}:${tag} ${WORKSPACE}"
+					echo "2"
 					sh "podman push ${imageRegistry}/${namespace}/${image}:${tag} --tls-verify=false "
+					echo "3"
 					sh "podman tag ${imageRegistry}/${namespace}/${image}:${tag} ${imageRegistry}/${namespace}/${image}:latest"
+					echo "4"
 					sh "podman push ${imageRegistry}/${namespace}/${image}:latest --tls-verify=false"
 				}
 			}

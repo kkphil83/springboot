@@ -34,6 +34,9 @@
 		def ocpClusterDomain = props["ocpClusterDomain"]
 		def imageRegistry = props["imageRegistry"]
 		
+		// OCP internal registry
+		def internalRegistry = props["internalRegistry"]
+
 		// tag를 재정의 함. 이미지 버전이 달라야 배포시 컨테이너에서 인식
 		def now = new Date()
 		def tag = now.format("yyMMdd-HHmmss", TimeZone.getTimeZone('Asia/Seoul'))
@@ -59,21 +62,17 @@
 			stage(stageName) {
 				echo "**** START : " + stageName + "\n"
 
-				//sh "oc login -u kubeadmin -p eH8zi-Y6Ucf-7kfxa-bhv4V https://api-int.${ocpClusterDomain}:6443  --insecure-skip-tls-verify"
-
 				container('podman') {
 					echo "*** podman Container ***"
 
+					withCredentials([usernamePassword(credentialsId: 'internalRegistry', usernameVariable: 'internalRegistry_user', passwordVariable: 'internalRegistry_pw')]) {
+						sh "podman login -u $internalRegistry_user ${internalRegistry} --tls-verify=false -p '$internalRegistry_pw'"
+						sh "podman build -f ${baseDir}${baseDeployDir}/Dockerfile -t ${imageRegistry}/${image}:${tag} ${WORKSPACE}  --tls-verify=false"
+					}
 					withCredentials([usernamePassword(credentialsId: 'quay', usernameVariable: 'quay_user', passwordVariable: 'quay_pw')]) {
 						sh "podman login -u $quay_user ${imageRegistry} -p '$quay_pw'"
-					
-						echo "1"
-						sh "podman build -f ${baseDir}${baseDeployDir}/Dockerfile -t ${imageRegistry}/${image}:${tag} ${WORKSPACE}  --tls-verify=false"
-						echo "2"
 						sh "podman push ${imageRegistry}/${image}:${tag} --tls-verify=false"
-						echo "3"
 						sh "podman tag ${imageRegistry}/${image}:${tag} ${imageRegistry}/${image}:latest"
-						echo "4"
 						sh "podman push ${imageRegistry}/${image}:latest --tls-verify=false"
 					}
 				}

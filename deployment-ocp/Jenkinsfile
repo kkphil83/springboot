@@ -87,26 +87,25 @@
 			stage( stageName ) {
 				echo "\n******* START : " + stageName + "\n"
 
-				container('cli') {
-					sh "oc get deploy ${appname} -n ${namespace} | grep ${appname} | wc -l > existed.txt"
+				sh "oc get deploy ${appname} -n ${namespace} | grep ${appname} | wc -l > existed.txt"
 
-					def existed = sh(script: 'cat existed.txt', returnStdout: true)
-					def toIntOrNull = { it?.isInteger() ? it.toInteger() : null }
+				def existed = sh(script: 'cat existed.txt', returnStdout: true)
+				def toIntOrNull = { it?.isInteger() ? it.toInteger() : null }
 
-					if(toIntOrNull(existed) > 0){
-						echo "\n******* Rolling Update ***********************\n"
-						sh "oc set image deployment/${appname} springboot-service-container=${internalRegistry}/${namespace}/${image}:${tag} --record -n ${namespace}"
-						sh "oc rollout status deployment.v1.apps/${appname} -n ${namespace}"
-					}else{
-						sh "oc apply -n ${namespace} -f ${baseDir}${baseDeployDir}/${deployment}"
-						sh "oc expose service svc-${appname} --hostname ${appname}.app.${ocpClusterDomain}"
-					}
-
-					echo "\n****** RESULT ******\n"
-					sh "oc get deployment -n ${namespace}"
-					sh "oc get svc -n ${namespace}"
-					sh "oc get route -n ${namespace}"
+				if(toIntOrNull(existed) > 0){
+					echo "\n******* Rolling Update ***********************\n"
+					sh "oc set image deployment/${appname} springboot-service-container=${internalRegistry}/${namespace}/${image}:${tag} --record -n ${namespace}"
+					sh "oc rollout status deployment.v1.apps/${appname} -n ${namespace}"
+				}else{
+					sh "oc apply -n ${namespace} -f ${baseDir}${baseDeployDir}/${deployment}"
+					sh "oc expose service svc-${appname} --hostname ${appname}.app.${ocpClusterDomain}"
 				}
+
+				echo "\n****** RESULT ******\n"
+				sh "oc get deployment -n ${namespace}"
+				sh "oc get svc -n ${namespace}"
+				sh "oc get route -n ${namespace}"
+
 			}
 				
 				

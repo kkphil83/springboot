@@ -32,11 +32,7 @@
 		def namespace = props["namespace"]
 		def skipStages = props["skipStages"]
 		def ocpClusterDomain = props["ocpClusterDomain"]
-
-		// ocp 내부에서 접속가능한 이미지 레지스트리 주소
-		def internalRegistry = "image-registry.openshift-image-registry.svc:5000"
-		//def imageRegistry = "image-registry.openshift-image-registry.svc:5000"
-		def imageRegistry = "default-route-openshift-image-registry.apps.ocp-poc.openshift.com"
+		def imageRegistry = props["imageRegistry"]
 		
 		// tag를 재정의 함. 이미지 버전이 달라야 배포시 컨테이너에서 인식
 		def now = new Date()
@@ -68,17 +64,17 @@
 				container('podman') {
 					echo "*** podman Container ***"
 
-					withCredentials([usernamePassword(credentialsId: 'podman', usernameVariable: 'podman_user', passwordVariable: 'podman_pw')]) {
-						sh "podman login -u $podman_user ${imageRegistry} --tls-verify=false -p $podman_pw"
+					withCredentials([usernamePassword(credentialsId: 'quay', usernameVariable: 'quay_user', passwordVariable: 'quay_pw')]) {
+						sh "podman login -u $quay_user ${imageRegistry} -p '$quay_pw'"
 					
 						echo "1"
-						sh "podman build -f ${baseDir}${baseDeployDir}/Dockerfile -t ${imageRegistry}/${namespace}/${image}:${tag} ${WORKSPACE}  --tls-verify=false"
+						sh "podman build -f ${baseDir}${baseDeployDir}/Dockerfile -t ${imageRegistry}/${image}:${tag} ${WORKSPACE}  --tls-verify=false"
 						echo "2"
-						sh "podman push ${imageRegistry}/${namespace}/${image}:${tag} --tls-verify=false"
+						sh "podman push ${imageRegistry}/${image}:${tag} --tls-verify=false"
 						echo "3"
-						sh "podman tag ${imageRegistry}/${namespace}/${image}:${tag} ${imageRegistry}/${namespace}/${image}:latest"
+						sh "podman tag ${imageRegistry}/${image}:${tag} ${imageRegistry}/${image}:latest"
 						echo "4"
-						sh "podman push ${imageRegistry}/${namespace}/${image}:latest --tls-verify=false"
+						sh "podman push ${imageRegistry}/${image}:latest --tls-verify=false"
 					}
 				}
 			}
@@ -94,23 +90,23 @@
 
 				if(toIntOrNull(existed) > 0){
 					echo "\n******* Rolling Update ***********************\n"
-					sh "oc set image deployment/${appname} springboot-service-container=${internalRegistry}/${namespace}/${image}:${tag} --record -n ${namespace}"
+					sh "oc set image deployment/${appname} ${containername}=${imageRegistry}/${image}:${tag} --record -n ${namespace}"
 					sh "oc rollout status deployment.v1.apps/${appname} -n ${namespace}"
 				}else{
 					sh "oc apply -n ${namespace} -f ${baseDir}${baseDeployDir}/${deployment}"
-					sh "oc expose service svc-${appname} --hostname ${appname}.app.${ocpClusterDomain}"
+					sh "sleep 2"
+					sh "oc expose service svc-${appname} --hostname ${appname}.apps.${ocpClusterDomain}"
 				}
 
 				echo "\n****** RESULT ******\n"
 				sh "oc get deployment -n ${namespace}"
 				sh "oc get svc -n ${namespace}"
 				sh "oc get route -n ${namespace}"
-
 			}
 				
 				
 			echo "**** FINISH ALL STAGES : SUCESS"
-			echo " swagger URL : ${appname}.app.${ocpClusterDomain}/swagger-ui.html"
+			echo " swagger URL : ${appname}.apps.${ocpClusterDomain}/swagger-ui.html"
 			
 		} catch(e) {
 			currentBuild.result = "FAILED"			

@@ -1,4 +1,4 @@
-FROM docker.io/azul/zulu-openjdk-alpine:15.0.3
+FROM image-registry.openshift-image-registry.svc:5000/openshift/ubi8-openjdk-8:1.3
 
 ADD target/*.jar app.jar
 

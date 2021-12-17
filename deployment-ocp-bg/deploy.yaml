@@ -15,11 +15,9 @@ spec:
       labels:
         appname: springboot-service
     spec:
-      nodeSelector:
-        node-role.kubernetes.io/worker: ""
       containers:
         - name: springboot-service-container
-          image: quay.io/kako1/springboot-service
+          image: image-registry.openshift-image-registry.svc:5000/default/springboot-service
           imagePullPolicy: Always
           env:
             - name: PORT
@@ -39,12 +37,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: springboot-service-svc
+  name: svc-springboot-service
 spec:
   type: ClusterIP
   selector:
     appname: springboot-service
   ports:
-    - name: springboot-service-port
+    - name: port-springboot-service
       port: 80
       targetPort: 8080

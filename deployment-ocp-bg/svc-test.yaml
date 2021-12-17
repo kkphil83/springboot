@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: springboot-service-svc-test
+spec:
+  type: ClusterIP
+  selector:
+    appname: springboot-service
+    color: green
+  ports:
+    - name: springboot-service-port
+      port: 80
+      targetPort: 8080

@@ -43,6 +43,9 @@
 		def now = new Date()
 		def tag = now.format("yyMMdd-HHmmss", TimeZone.getTimeZone('Asia/Seoul'))
 
+        // 숫자인지 Null 인지 확인하여 숫자로 변환
+        def toIntOrNull = { it?.isInteger() ? it.toInteger() : null }
+
 		try {
 			stageName = "Build maven project"
 			stage(stageName) {

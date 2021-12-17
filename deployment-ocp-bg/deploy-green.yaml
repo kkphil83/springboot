@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: springboot-blue
+  name: springboot-green
   labels:
     appname: springboot
-    color: blue
+    color: green
 spec:
   selector:
     matchLabels:
       appname: springboot
-      color: blue
+      color: green
   replicas: 1
   template:
     metadata:
       name: springboot
       labels:
         appname: springboot
-        color: blue
+        color: green
     spec:
       nodeSelector:
         node-role.kubernetes.io/worker: ""

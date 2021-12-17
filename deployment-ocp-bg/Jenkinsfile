@@ -33,7 +33,9 @@
 		def skipStages = props["skipStages"]
 		def ocpClusterDomain = props["ocpClusterDomain"]
 		def imageRegistry = props["imageRegistry"]
-		
+		def newColor = ""
+		def currentColor = ""
+
 		// OCP internal registry
 		def internalRegistry = props["internalRegistry"]
 
@@ -58,6 +60,27 @@
 				}
 			}		
 
+			stageName = "Check the current color"	
+			stage(stageName) {
+				echo "\n******* START : " + stageName + "\n"
+
+				//sh "oc login -u admin -p admin https://api-int.${ocpClusterDomain}:6443  --insecure-skip-tls-verify"
+				sh "oc config set-context --namespace=${namespace} --current"
+				sh "oc get svc ${appname}-svc -o wide | grep svc | grep blue | wc -l > currentColor.txt"
+				currentColor = sh(script: 'cat currentColor.txt', returnStdout: true)
+				newColor = ""
+
+				if(toIntOrNull(currentColor) > 0){
+					currentColor = "blue"
+					newColor = "green"
+				}else{
+					currentColor = "green"
+					newColor = "blue"
+				}
+
+				echo "\n # Current Color : " + currentColor + "\n #     New Color : " + newColor + "\n"
+			}
+
 			stageName = "Build Container Image"	
 			stage(stageName) {
 				echo "**** START : " + stageName + "\n"
@@ -77,37 +100,88 @@
 					}
 				}
 			}
-							
-			stageName = "Deploy to Cluster"
+
+			stageName = "Deploy to OCP"
 			stage( stageName ) {
 				echo "\n******* START : " + stageName + "\n"
 
-				sh "oc get deploy ${appname} -n ${namespace} | grep ${appname} | wc -l > existed.txt"
+// 서비스 배포를 위한 파일명 설정
+				def newDeploymentYaml = "deploy-${newColor}.yaml"
+				def curDeploymentYaml = "deploy-${currentColor}.yaml"
+ 
+// 기존에 Deployment 가 몇 개 존재하는지 확인
+				sh "oc get deploy ${appname}-blue -n ${namespace} | grep ${appname} | wc -l > existed.txt"
+				def blueExisted = sh(script: 'cat existed.txt', returnStdout: true)
+				sh "oc get deploy ${appname}-green -n ${namespace} | grep ${appname} | wc -l > existed.txt"
+				def greenExisted = sh(script: 'cat existed.txt', returnStdout: true)
+				int existed = blueExisted.toInteger() + greenExisted.toInteger()
 
-				def existed = sh(script: 'cat existed.txt', returnStdout: true)
-				def toIntOrNull = { it?.isInteger() ? it.toInteger() : null }
+				echo "\n******* existed color count : " + existed + "\n"
 
-				if(toIntOrNull(existed) > 0){
-					echo "\n******* Rolling Update ***********************\n"
-					sh "oc set image deployment/${appname} ${containername}=${imageRegistry}/${image}:${tag} --record -n ${namespace}"
-					sh "oc rollout status deployment.v1.apps/${appname} -n ${namespace}"
+				if(existed > 0){
+					if(existed == 2){				
+// [정상상태] 기존에 Blue/Green 모두 존재하는 경우 => 신규 버전 Rolling Update
+						echo "\n******* 기존에 Blue/Green 모두 존재하는 경우 => 신규 버전 : " + newColor + " Rolling Update \n"
+						
+						sh "oc set image deployment/${appname}-${newColor} ${containername}=${internalRegistry}/${namespace}/${image}:${tag} --record -n ${namespace}"
+						sh "oc rollout status deployment.v1.apps/${appname}-${newColor} -n ${namespace}"
+						sh "oc patch service ${appname}-svc-test --type merge --patch '{\"spec\":{\"selector\":{\"color\":\"${newColor}\"}}}'"
+					}else if(existed == 1){
+// [비정상상태] 기존에 Blue/Green 중 하나만 존재하는 경우 => 신규 버전 배포
+						echo "\n******* 기존에 Blue/Green 중 하나만 존재하는 경우 => 신규 버전 : " + newColor + " 배포 \n"
+
+						sh "oc apply -n ${namespace} -f ${baseDir}${baseDeployDir}/${newDeploymentYaml}"
+						sh "oc patch service ${appname}-svc-test --type merge --patch '{\"spec\":{\"selector\":{\"color\":\"${newColor}\"}}}'"
+					}
+
+					echo "\n****** New Color - Result ******\n"
+					sh "oc get deployment -n ${namespace} | grep ${newColor}"
+					sh "oc get pod -n ${namespace} | grep ${newColor}"
+
+					echo " TEST URL : http://test.${appname}.${namespace}.apps.${ocpClusterDomain} \n"
+
+// 신규 버전을 서비스하기 위한 승인 절차
+					try {
+							timeout(time: 10, unit: 'MINUTES') { 
+							input("\n### 신규 버전으로 서비스 하시겠습니까? (대기시간 10분)\n") 
+						}
+						echo "\n******* 신규 버전으로 서비스합니다. ********\n" 
+
+						sh "oc patch service ${appname}-svc --type merge --patch '{\"spec\":{\"selector\":{\"color\":\"${newColor}\"}}}'"
+						sh "oc patch service ${appname}-svc-test --type merge --patch '{\"spec\":{\"selector\":{\"color\":\"${currentColor}\"}}}'"
+
+					} catch (Exception e) { 
+						echo "\n******* 기존 버전을 유지합니다. ********\n"
+					}
+
 				}else{
-					sh "oc apply -n ${namespace} -f ${baseDir}${baseDeployDir}/${deployment}"
-					sh "oc expose service svc-${appname} --hostname ${appname}.apps.${ocpClusterDomain} -n ${namespace}"
+// [초기상태] 기존 서비스가 없는 초기 상태인 경우 => Blue/Green 모두 배포
+					echo "\n******* 기존 서비스가 없는 초기 상태인 경우 => Blue, Green 모두 배포 \n"
+
+					sh "oc apply -n ${namespace} -f ${baseDir}${baseDeployDir}/${curDeploymentYaml}"
+					sh "oc apply -n ${namespace} -f ${baseDir}${baseDeployDir}/${newDeploymentYaml}"
+					sh "oc apply -n ${namespace} -f ${baseDir}${baseDeployDir}/svc-test.yaml"
+					sh "oc apply -n ${namespace} -f ${baseDir}${baseDeployDir}/svc.yaml"
+					sh "oc expose service ${appname}-svc-test --hostname test.${appname}.${namespace}.apps.${ocpClusterDomain}"
+					sh "oc expose service ${appname}-svc --hostname ${appname}.${namespace}.apps.${ocpClusterDomain}"					
 				}
 
 				echo "\n****** RESULT ******\n"
-				sh "oc get deployment -n ${namespace}"
-				sh "oc get svc -n ${namespace}"
-				sh "oc get route -n ${namespace}"
+				sh "oc get deployment -n ${namespace} | grep ${appname}"
+				sh "oc get pod -n ${namespace} | grep ${appname}"
+				sh "oc get svc -n ${namespace} | grep ${appname}"
+				sh "oc get route -n ${namespace} | grep ${appname}"
+
+				echo "\n******* FINISH Deploy : SUCCESS \n"
+				echo " Service URL : http://${appname}.${namespace}.apps.${ocpClusterDomain} \n"
+				echo " TEST    URL : http://test.${appname}.${namespace}.apps.${ocpClusterDomain} \n"
 			}
-				
-				
-			echo "**** FINISH ALL STAGES : SUCESS"
-			echo " swagger URL : http://${appname}.apps.${ocpClusterDomain}/swagger-ui.html"
-			
-		} catch(e) {
+
+		} catch(Exception e) {
 			currentBuild.result = "FAILED"			
+			println(e.toString());
+         	println(e.getMessage());
+         	println(e.getStackTrace()); 
 		}
 	}
 //}

@@ -174,8 +174,8 @@
 				sh "oc get route -n ${namespace} | grep ${appname}"
 
 				echo "\n******* FINISH Deploy : SUCCESS \n"
-				echo " Service URL : http://${appname}.${namespace}.apps.${ocpClusterDomain} \n"
-				echo " TEST    URL : http://test.${appname}.${namespace}.apps.${ocpClusterDomain} \n"
+				echo " Service URL : http://${appname}.${namespace}.apps.${ocpClusterDomain}/swagger-ui.html \n"
+				echo " TEST    URL : http://test.${appname}.${namespace}.apps.${ocpClusterDomain}/swagger-ui.html \n"
 			}
 
 		} catch(Exception e) {

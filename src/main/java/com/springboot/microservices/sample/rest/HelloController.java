@@ -49,13 +49,11 @@ public class HelloController {
 		
 		List<SampleUser> list = null;
 		try {
-			log.info("Start db select");
 			list = sampleUserDao.selectUser();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		log.debug("user counts :"+list.size());
 		
 		return new ResponseEntity<List<SampleUser>> (list, HttpStatus.OK);
 	}
@@ -66,13 +64,11 @@ public class HelloController {
 		
 		int test = -1;
 		try {
-			log.info("Start db select");
 			test = sampleUserDao.selectTest();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		log.debug("user counts :"+test);
 		
 		return new ResponseEntity<String> (test+"", HttpStatus.OK);
 	}	

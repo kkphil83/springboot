@@ -124,7 +124,7 @@
 // [정상상태] 기존에 Blue/Green 모두 존재하는 경우 => 신규 버전 Rolling Update
 						echo "\n******* 기존에 Blue/Green 모두 존재하는 경우 => 신규 버전 : " + newColor + " Rolling Update \n"
 						
-						sh "oc set image deployment/${appname}-${newColor} ${containername}=${internalRegistry}/${namespace}/${image}:${tag} --record -n ${namespace}"
+						sh "oc set image deployment/${appname}-${newColor} ${containername}=${imageRegistry}/${image}:${tag} --record -n ${namespace}"
 						sh "oc rollout status deployment.v1.apps/${appname}-${newColor} -n ${namespace}"
 						sh "oc patch service ${appname}-svc-test --type merge --patch '{\"spec\":{\"selector\":{\"color\":\"${newColor}\"}}}' -n ${namespace}"
 					}else if(existed == 1){

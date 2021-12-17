@@ -1,25 +1,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: springboot-service
+  name: springboot
   labels:
-    appname: springboot-service
+    appname: springboot
 spec:
   selector:
     matchLabels:
-      appname: springboot-service
+      appname: springboot
   replicas: 1
   template:
     metadata:
-      name: springboot-service
+      name: springboot
       labels:
-        appname: springboot-service
+        appname: springboot
     spec:
       nodeSelector:
         node-role.kubernetes.io/worker: ""
       containers:
-        - name: springboot-service-container
-          image: quay.io/kako1/springboot-service
+        - name: springboot-container
+          image: quay.io/kako1/springboot
           imagePullPolicy: Always
           env:
             - name: PORT
@@ -39,12 +39,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: springboot-service-svc
+  name: springboot-svc
 spec:
   type: ClusterIP
   selector:
-    appname: springboot-service
+    appname: springboot
   ports:
-    - name: springboot-service-port
+    - name: springboot-port
       port: 80
       targetPort: 8080

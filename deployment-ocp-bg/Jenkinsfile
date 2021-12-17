@@ -64,9 +64,7 @@
 			stage(stageName) {
 				echo "\n******* START : " + stageName + "\n"
 
-				//sh "oc login -u admin -p admin https://api-int.${ocpClusterDomain}:6443  --insecure-skip-tls-verify"
-				sh "oc config set-context --namespace=${namespace} --current"
-				sh "oc get svc ${appname}-svc -o wide | grep svc | grep blue | wc -l > currentColor.txt"
+				sh "oc get svc ${appname}-svc -o wide -n ${namespace} | grep svc | grep blue | wc -l > currentColor.txt"
 				currentColor = sh(script: 'cat currentColor.txt', returnStdout: true)
 				newColor = ""
 
@@ -125,13 +123,13 @@
 						
 						sh "oc set image deployment/${appname}-${newColor} ${containername}=${internalRegistry}/${namespace}/${image}:${tag} --record -n ${namespace}"
 						sh "oc rollout status deployment.v1.apps/${appname}-${newColor} -n ${namespace}"
-						sh "oc patch service ${appname}-svc-test --type merge --patch '{\"spec\":{\"selector\":{\"color\":\"${newColor}\"}}}'"
+						sh "oc patch service ${appname}-svc-test --type merge --patch '{\"spec\":{\"selector\":{\"color\":\"${newColor}\"}}}' -n ${namespace}"
 					}else if(existed == 1){
 // [비정상상태] 기존에 Blue/Green 중 하나만 존재하는 경우 => 신규 버전 배포
 						echo "\n******* 기존에 Blue/Green 중 하나만 존재하는 경우 => 신규 버전 : " + newColor + " 배포 \n"
 
 						sh "oc apply -n ${namespace} -f ${baseDir}${baseDeployDir}/${newDeploymentYaml}"
-						sh "oc patch service ${appname}-svc-test --type merge --patch '{\"spec\":{\"selector\":{\"color\":\"${newColor}\"}}}'"
+						sh "oc patch service ${appname}-svc-test --type merge --patch '{\"spec\":{\"selector\":{\"color\":\"${newColor}\"}}}' -n ${namespace}"
 					}
 
 					echo "\n****** New Color - Result ******\n"
@@ -147,8 +145,8 @@
 						}
 						echo "\n******* 신규 버전으로 서비스합니다. ********\n" 
 
-						sh "oc patch service ${appname}-svc --type merge --patch '{\"spec\":{\"selector\":{\"color\":\"${newColor}\"}}}'"
-						sh "oc patch service ${appname}-svc-test --type merge --patch '{\"spec\":{\"selector\":{\"color\":\"${currentColor}\"}}}'"
+						sh "oc patch service ${appname}-svc --type merge --patch '{\"spec\":{\"selector\":{\"color\":\"${newColor}\"}}}' -n ${namespace}"
+						sh "oc patch service ${appname}-svc-test --type merge --patch '{\"spec\":{\"selector\":{\"color\":\"${currentColor}\"}}}' -n ${namespace}"
 
 					} catch (Exception e) { 
 						echo "\n******* 기존 버전을 유지합니다. ********\n"
@@ -162,8 +160,8 @@
 					sh "oc apply -n ${namespace} -f ${baseDir}${baseDeployDir}/${newDeploymentYaml}"
 					sh "oc apply -n ${namespace} -f ${baseDir}${baseDeployDir}/svc-test.yaml"
 					sh "oc apply -n ${namespace} -f ${baseDir}${baseDeployDir}/svc.yaml"
-					sh "oc expose service ${appname}-svc-test --hostname test.${appname}.${namespace}.apps.${ocpClusterDomain}"
-					sh "oc expose service ${appname}-svc --hostname ${appname}.${namespace}.apps.${ocpClusterDomain}"					
+					sh "oc expose service ${appname}-svc-test --hostname test.${appname}.${namespace}.apps.${ocpClusterDomain} -n ${namespace}"
+					sh "oc expose service ${appname}-svc --hostname ${appname}.${namespace}.apps.${ocpClusterDomain} -n ${namespace}"					
 				}
 
 				echo "\n****** RESULT ******\n"

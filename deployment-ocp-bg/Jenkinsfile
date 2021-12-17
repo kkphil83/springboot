@@ -22,7 +22,7 @@
 		}
 		
 		//-- 환경변수 파일 읽어서 변수값 셋팅
-		def props = readProperties  file:"./deployment-ocp/pipeline-ocp.properties"  // __custom__
+		def props = readProperties  file:"./deployment-ocp-bg/pipeline-ocp.properties"  // __custom__
 		def image = props["image"]
 		def appname = props["appname"]
 		def containername = props["containername"]

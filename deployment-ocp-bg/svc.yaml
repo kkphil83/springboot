@@ -1,13 +1,13 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: springboot-service-svc
+  name: springboot-svc
 spec:
   type: ClusterIP
   selector:
-    appname: springboot-service
+    appname: springboot
     color: blue
   ports:
-    - name: springboot-service-port
+    - name: springboot-port
       port: 80
       targetPort: 8080

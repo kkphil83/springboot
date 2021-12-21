@@ -36,7 +36,7 @@ public class SwaggerConfig  {
 	 
 	    private ApiInfo apiInfo() {
 	        return new ApiInfoBuilder()
-	                .title("Jenkins Springboot Sample Rest API v2")
+	                .title("Jenkins Springboot Sample Rest API v1")
 	                .description("Jenkins Springboot Sample 서비스의 Rest API 입니다. ")
 	                .build();
 	 

@@ -90,7 +90,6 @@
 					echo "*** podman Container ***"
 
 					withCredentials([usernamePassword(credentialsId: 'internalRegistry', usernameVariable: 'internalRegistry_user', passwordVariable: 'internalRegistry_pw')]) {
-						sh "podman build -f ${baseDir}${baseDeployDir}/Dockerfile -t ${imageRegistry}/${image}:${tag} ${WORKSPACE}  --tls-verify=false"
 						sh "podman login -u $internalRegistry_user ${internalRegistry} --tls-verify=false -p '$internalRegistry_pw'"
 						sh "podman build -f ${baseDir}${baseDeployDir}/Dockerfile -t ${imageRegistry}/${image}:${tag} ${WORKSPACE}  --tls-verify=false"
 					}
